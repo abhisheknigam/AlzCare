@@ -1,0 +1,14 @@
+-e --BOUNDARY1234
+Content-Disposition: form-data; name="metadata"
+Content-Type: application/json; charset=UTF-8
+
+{"messageHeader": {},"messageBody": {"profile": "alexa-close-talk","locale": "en-us","format": "audio/L16; rate=16000; channels=1"}}
+
+--BOUNDARY1234
+Content-Disposition: form-data; name="audio"
+Content-Type: audio/L16; rate=16000; channels=1
+
+-e 
+
+--BOUNDARY1234--
+
