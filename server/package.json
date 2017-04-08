@@ -1,0 +1,22 @@
+{
+  "name": "AlzheimersMemoryServer",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "async": "latest",
+    "body-parser": "~1.13.2",
+    "cors": "^2.8.1",
+    "dateformat": "latest",
+    "express": "~4.13.1",
+    "http-proxy": "latest",
+    "mongoose": "latest",
+    "multer": "latest",
+    "nodemon": "latest",
+    "request": "latest",
+    "serve-favicon": "~2.3.0",
+    "simple-encryptor": "latest",
+    "underscore": "latest",
+    "utf8": "^2.1.2",
+    "util": "^0.10.3"
+  }
+}

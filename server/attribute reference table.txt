@@ -1,0 +1,26 @@
+@1@	Name
+@2@	Age
+@3@	Exact location
+@4@	hobby
+@5@	pet
+@6@	pet's name
+@7@	Favorite national sports team
+@8@	favorite musician/band
+@9@	favorite music genre
+@10@	Wife's/spouse's name
+@11@	a country/city you have travelled to
+@12@	a list of films you love
+@13@	favorite food/dish
+@14@	Company/business you worked for previously
+@15@ 	Your title at your previous job
+@16@	<wife>Loading an image of your spouse
+@17@	
+@18@	A tv show that they like
+@19@
+@30@	daughter name
+@27@	<<makes phone call to emergency contact>>
+@30@	Child's name
+@31@	Aniversary date
+@32@	number of children
+@33@	Daughter's home city
+@34@	Daughter's age
