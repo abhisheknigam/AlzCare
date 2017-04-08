@@ -222,7 +222,7 @@ checkReminders = function(){
 			//SECTION
 			//this is where the script is called, change the arguments accordingly. 
 			
-			exec('../pushNotifications/./alexa.sh \"' + JSON.stringify(reminder) + '\"', 
+			exec('../pushNotifications/./alexa.sh \"' + reminder.description + '\"', 
 			function(error, stdout, stderr){
 				console.log('stdout: ' + stdout);
         		console.log('stderr: ' + stderr);
