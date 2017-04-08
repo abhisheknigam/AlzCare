@@ -191,17 +191,17 @@ var userKeyValuePair = [{
 // }
 
 //for testing purposes only
-insertReminder = function(){
-	var date = new Date();
-	var reminder = new reminders({
-    "description" : "hi",
-    "time" : new Date(date.getTime() + 5*60*1000),
-    "reminded" : false
-	});
-	reminder.save(function(err){
-	});
-}
-insertReminder();
+// insertReminder = function(){
+// 	var date = new Date();
+// 	var reminder = new reminders({
+//     "description" : "hi",
+//     "time" : new Date(date.getTime() + 5*60*1000),
+//     "reminded" : false
+// 	});
+// 	reminder.save(function(err){
+// 	});
+// }
+// insertReminder();
 
 //function that queries database for reminders and relays message.
 checkReminders = function(){
