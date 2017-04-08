@@ -190,18 +190,18 @@ var userKeyValuePair = [{
 // 		function(err){console.log('error ' + err)});
 // }
 
-// //for testing purposes only
-// insertReminder = function(){
-// 	var date = new Date();
-// 	var reminder = new reminders({
-//     "description" : "hi",
-//     "time" : new Date(date.getTime() + 5*60*1000),
-//     "reminded" : false
-// 	});
-// 	reminder.save(function(err){
-// 	});
-// }
-// insertReminder();
+//for testing purposes only
+insertReminder = function(){
+	var date = new Date();
+	var reminder = new reminders({
+    "description" : "hi",
+    "time" : new Date(date.getTime() + 5*60*1000),
+    "reminded" : false
+	});
+	reminder.save(function(err){
+	});
+}
+insertReminder();
 
 //function that queries database for reminders and relays message.
 checkReminders = function(){
@@ -222,15 +222,15 @@ checkReminders = function(){
 			//SECTION
 			//this is where the script is called, change the arguments accordingly. 
 			
-			// child = exec('scriptName ' + reminder, 
-			// function(error, stdout, stderr){
-			// 	console.log('stdout: ' + stdout);
-        	// 	console.log('stderr: ' + stderr);
-        	// 	if (error !== null) {
-            //  	console.log('exec error: ' + error);
-        	// 	}
-			// });
-			// child();
+			exec('../pushNotifications/./alexa.sh \"' + JSON.stringify(reminder) + '\"', 
+			function(error, stdout, stderr){
+				console.log('stdout: ' + stdout);
+        		console.log('stderr: ' + stderr);
+        		if (error !== null) {
+             	console.log('exec error: ' + error);
+        		}
+			});
+			//child();
 
 			//update reminded to true
 			reminders.update({'_id': reminder._id}, {'$set': {'reminded': true}}, function(err, data){
