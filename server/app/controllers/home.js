@@ -14,6 +14,7 @@ var knowledgeBaseId = 'c7c0dc9e-5809-4c4b-822f-a913ed59d946';
 var subsriptionKey = 'a2ea2916d854479dabf9ea302e61a415';
 var httpsRequest = require('request');
 var utf8 = require('utf8');
+var exec = require('child_process').exec, child;
 
 var information;
 
@@ -217,6 +218,20 @@ checkReminders = function(){
 		var reminderList = JSON.parse(JSON.stringify(response));
 		for(var index in reminderList){
 			var reminder = reminderList[index];
+
+			//SECTION
+			//this is where the script is called, change the arguments accordingly. 
+			
+			// child = exec('scriptName ' + reminder, 
+			// function(error, stdout, stderr){
+			// 	console.log('stdout: ' + stdout);
+        	// 	console.log('stderr: ' + stderr);
+        	// 	if (error !== null) {
+            //  	console.log('exec error: ' + error);
+        	// 	}
+			// });
+			// child();
+
 			//update reminded to true
 			reminders.update({'_id': reminder._id}, {'$set': {'reminded': true}}, function(err, data){
 				if(err){
