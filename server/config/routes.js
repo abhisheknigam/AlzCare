@@ -15,6 +15,7 @@ module.exports = function (app) {
     app.post('/setReminder', home.setReminder);
     app.post('/sos', home.handleSOS);
     app.post('/temp', home.sendQuestion);
+    app.get('/getQuestions', home.getQuestions);
     /*app.get('/signup', home.signup);
 
     app.get('/', home.loggedIn, home.home);//home
