@@ -275,16 +275,12 @@ checkReminders = function(mins){
 				}
 			});
 		}
-		if(reminderList.length==0){
-			return false;
-		} else {
-			return true;
-		}
 	});
 	
 }
 //call this function upon init.
 checkReminders(5);
+console.log(checkReminders(5));
 //call this function with arguments function, timing period, argument to function
 setInterval(checkReminders, 5*1000, 5);
 
@@ -522,9 +518,8 @@ exports.sendQuestion = function(req, res){
 					    		}else{
 									var currentAnswer;
 										if(splitAnswer[x]==45){
-											if(!checkReminders(30)){
-												currentAnswer = 'Sorry, you don\'t have any reminders.';
-											}
+											checkReminders(30);
+											currentAnswer = 'you have no more reminders.';
 										}
 						    			for(var y in userKeyValuePair){
 						    				if(userKeyValuePair[y].key==answerKeyValuePair[splitAnswer[x]]){
