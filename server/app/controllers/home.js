@@ -96,7 +96,8 @@ var answerKeyValuePair = {
 	'34':'Daughter age',
 	'35':'<<daughter>>',
 	'36':'<<family>>',
-	'37':'<<grandChildren>>'
+	'37':'<<grandChildren>>',
+	'45':'Reminders'
 }
 
 var userKeyValuePair = [{
@@ -181,6 +182,9 @@ var userKeyValuePair = [{
 },{
 	key:'<<grandChildren>>',
 	value:'##https://s3.amazonaws.com/images-caltech-hacks/2747400516_45170dcfc6_z.jpg##'
+},{
+	key:'Reminder',
+	value:''
 }]
 
 
@@ -205,7 +209,7 @@ var userKeyValuePair = [{
 // insertReminder();
 
 //function that queries database for reminders and relays message.
-checkReminders = function(){
+checkReminders = function(mins){
 	console.log('checking reminders');
 
 	var fs = require('fs');
@@ -240,7 +244,7 @@ checkReminders = function(){
 
 
 	var date = new Date();
-	var futureDate = new Date(date.getTime() + 5*60*1000);
+	var futureDate = new Date(date.getTime() + mins*60*1000);
 	var reminderQuery = reminders.find({'time': {
 		$gt: date,
 		$lte: futureDate
@@ -271,13 +275,18 @@ checkReminders = function(){
 				}
 			});
 		}
+		if(reminderList.length==0){
+			return false;
+		} else {
+			return true;
+		}
 	});
 	
 }
 //call this function upon init.
-checkReminders();
-//call this function every minute.
-setInterval(checkReminders, 5*1000);
+checkReminders(5);
+//call this function with arguments function, timing period, argument to function
+setInterval(checkReminders, 5*1000, 5);
 
 exports.setReminder = function(req, res){
 	var data = req.body;
@@ -511,7 +520,12 @@ exports.sendQuestion = function(req, res){
 					    		if(answerKeyValuePair[splitAnswer[x]]==undefined){
 					    			output=output+splitAnswer[x]+" ";
 					    		}else{
-						    			var currentAnswer;
+									var currentAnswer;
+										if(splitAnswer[x]==45){
+											if(!checkReminders(30)){
+												currentAnswer = 'Sorry, you don\'t have any reminders.';
+											}
+										}
 						    			for(var y in userKeyValuePair){
 						    				if(userKeyValuePair[y].key==answerKeyValuePair[splitAnswer[x]]){
 						    					currentAnswer=userKeyValuePair[y].value;
