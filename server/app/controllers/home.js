@@ -431,7 +431,7 @@ function getIntermediateResponse(req, res){
 }
 
 exports.getLatestQuestion = function(req, res){
-	var query = questions.find({}).sort({$natural:-1}).limit(1);
+	var query = questions.findOne({}).sort({$natural:-1}).limit(1);
 
 	query.exec(function(err, response){
 		if(err){
