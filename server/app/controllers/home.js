@@ -6,6 +6,7 @@ var mongoose = require('mongoose');
 mongoose.connect(configDB.url);*/
 var users = require('../models/home.js');
 var reminders = require('../models/reminder.js');
+var questions = require('../models/question.js');
 var cors = require('cors');
 var util = require('util');
 var multer = require('multer');
@@ -429,6 +430,18 @@ function getIntermediateResponse(req, res){
 	return output;
 }
 
+exports.getQuestions = function(req, res){
+	var query = questions.find({});
+
+	query.exec(function(err, response){
+		if(err){
+			console.log(err);
+			res.send(err);
+		}
+		res.send(response);
+	});
+}
+
 exports.sendQuestion = function(req, res){
 	console.log("inside sendquestion");
 	console.log(JSON.stringify(req.body));
@@ -437,6 +450,15 @@ exports.sendQuestion = function(req, res){
 		var output;
 	    //checkAndHandleConjugate(req,res);
 		//var options = createOptions(req,res);
+		var question = new questions({
+			"question" : req.body.question,
+			"sentiment": 'inquisitive'
+		});
+		question.save(function(err){
+			if(err){
+				console.log(err);
+			}
+		})
 		var options = {
 	  		url: 'https://westus.api.cognitive.microsoft.com/qnamaker/v1.0/knowledgebases/'+knowledgeBaseId+'/generateAnswer',
 		  	method: 'POST',
