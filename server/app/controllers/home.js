@@ -430,8 +430,8 @@ function getIntermediateResponse(req, res){
 	return output;
 }
 
-exports.getQuestions = function(req, res){
-	var query = questions.find({});
+exports.getLatestQuestion = function(req, res){
+	var query = questions.find({}).sort({$natural:-1}).limit(1);
 
 	query.exec(function(err, response){
 		if(err){
