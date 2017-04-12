@@ -10,7 +10,7 @@ var cors = require('cors');
 var util = require('util');
 var multer = require('multer');
 var upload = multer({ dest: 'uploads/' });
-var knowledgeBaseId = 'c7c0dc9e-5809-4c4b-822f-a913ed59d946';
+var knowledgeBaseId = 'a35153a8-ccab-46c6-b2ef-b0a5e1da8915';
 var subsriptionKey = 'a2ea2916d854479dabf9ea302e61a415';
 var httpsRequest = require('request');
 var utf8 = require('utf8');
@@ -207,6 +207,37 @@ var userKeyValuePair = [{
 checkReminders = function(){
 	console.log('checking reminders');
 
+	var fs = require('fs');
+	if (fs.existsSync("../pushNotifications/notifications.txt")) {
+    	fs.appendFile("../pushNotifications/notifications.txt", "\nHey there", function(err) {
+	    if(err) {
+	        return console.log(err);
+	    }
+
+	    console.log("The text was appended to the file");
+		}); 
+	}else{
+		fs.writeFile("../pushNotifications/notifications.txt", "who am i", function(err) {
+	    if(err) {
+	        return console.log(err);
+	    }
+
+	    console.log("The file was created");
+		});
+	}
+	
+
+	/*exec('/home/karanvasnani/Desktop/AlzCare/pushNotifications/./a.sh \"' + "hello" + '\"', 
+			function(error, stdout, stderr){
+				console.log('stdout: ' + stdout);
+        		console.log('stderr: ' + stderr);
+        		if (error !== null) {
+             	console.log('exec error: ' + error);
+        		}
+	});*/
+
+
+
 	var date = new Date();
 	var futureDate = new Date(date.getTime() + 5*60*1000);
 	var reminderQuery = reminders.find({'time': {
@@ -245,7 +276,7 @@ checkReminders = function(){
 //call this function upon init.
 checkReminders();
 //call this function every minute.
-setInterval(checkReminders, 60*1000);
+setInterval(checkReminders, 5*1000);
 
 exports.setReminder = function(req, res){
 	var data = req.body;
@@ -399,6 +430,8 @@ function getIntermediateResponse(req, res){
 }
 
 exports.sendQuestion = function(req, res){
+	console.log("inside sendquestion");
+	console.log(JSON.stringify(req.body));
 	users.findById(req.params.id,function(err,user){
 		var commonAnswer = 'Sorry I do not have an answer for that.I am still learning about you, ask me anything else about yourself.';
 		var output;
@@ -486,6 +519,101 @@ exports.sendQuestion = function(req, res){
 	});
 }
 
+exports.getAnswers = function(req, res){
+	console.log("inside answers");
+	var str = req.url.split('?')[1].split('=')[1];
+	var input = str.replace(/%20/g, " ");
+	console.log(input);
+	users.findById(req.params.id,function(err,user){
+		var commonAnswer = 'Sorry I do not have an answer for that.I am still learning about you, ask me anything else about yourself.';
+		var output;
+	    //checkAndHandleConjugate(req,res);
+		//var options = createOptions(req,res);
+		var options = {
+	  		url: 'https://westus.api.cognitive.microsoft.com/qnamaker/v1.0/knowledgebases/'+knowledgeBaseId+'/generateAnswer',
+		  	method: 'POST',
+		  	headers: {
+		      'Content-Type': 'application/json',
+		      'Ocp-Apim-Subscription-Key':subsriptionKey
+		  	},
+		  	body: JSON.stringify({question: input})
+		};
+		console.log('before 1st qna:'+new Date());
+		httpsRequest(options, function callback(error, response, body) {
+			  console.log('before 1st qna:'+ JSON.stringify(response));
+			  var info = JSON.parse(response.body);
+			  //var info = question;
+			 
+			  if (!error && response.statusCode == 200) {
+			  	 //console.log('after 1st qna:'+JSON.stringify(info));
+			    
+			    /*if(info.score==0){
+			    	res.status(200).json({answer:commonAnswer});
+			    	return;
+			    }*/
+			    var answer = info.answer;
+			    //var answer = input;
+			    var options = {
+			  		url: 'https://westus.api.cognitive.microsoft.com/qnamaker/v1.0/knowledgebases/'+knowledgeBaseId+'/generateAnswer',
+				  	method: 'POST',
+				  	headers: {
+				      'Content-Type': 'application/json',
+				      'Ocp-Apim-Subscription-Key':subsriptionKey
+				  	},
+				  	body: JSON.stringify({question: answer})
+				};
+				console.log('before second qna:'+new Date());
+				httpsRequest(options, function callback(error, response, body) {
+					  if (!error && response.statusCode == 200) {
+					  	console.log('after second qna:'+new Date());
+					    var innerInfo = JSON.parse(body);
+					    console.log(innerInfo);
+					    if(innerInfo.score==0){
+					    	res.status(200).json({answer:commonAnswer});
+					    	return;
+					    }
+					    var innerAnswer = innerInfo.answer;
+					    var splitAnswer = innerAnswer.split("@");
+					    //console.log(splitAnswer.length);
+					    if(splitAnswer.length==1){
+					    	output = innerAnswer;
+					    }else{
+					    	output = "";
+					    	for(var x in splitAnswer){
+					    		if(answerKeyValuePair[splitAnswer[x]]==undefined){
+					    			output=output+splitAnswer[x]+" ";
+					    		}else{
+						    			var currentAnswer;
+						    			for(var y in userKeyValuePair){
+						    				if(userKeyValuePair[y].key==answerKeyValuePair[splitAnswer[x]]){
+						    					currentAnswer=userKeyValuePair[y].value;
+						    					break;
+						    				}
+						    			}
+						    			output=output+currentAnswer+" ";
+					    			
+					    		}
+					    	}
+
+					    }
+					    
+					    //output = utf8.encode(output);
+					    //console.log(JSON.stringify(output));
+					    console.log(output);
+			    		res.status(200).json({answer:output});
+					}else{
+						res.send(error);
+					}
+
+				});
+				
+			 }else{
+			 	res.send(error);
+			 }
+		});
+	});
+}
+
 exports.getStory = function(req, res){
 	res.status(200).json(userKeyValuePair);
 }
@@ -498,10 +626,19 @@ exports.storeInfo = function(req, res){
 }
 
 exports.getInfo = function(req, res){
+	information = "HI";
+	console.log(req.url.split('?')[1].split('=')[1]);
+	var str = req.url.split('?')[1].split('=')[1];
+	var replaced = str.replace("%20", " ");
+	console.log(replaced);
+
 	if(information==undefined){
 		res.status(204).send();
 	}else{
 		res.status(200).json({info: information});
 	}
 }
+
+
+
 
