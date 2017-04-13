@@ -14,8 +14,11 @@ module.exports = function (app) {
     app.get('/getInfo', home.getInfo);
     app.post('/setReminder', home.setReminder);
     app.post('/sos', home.handleSOS);
+    app.post('/sendSMS', home.sendSMS);
     app.post('/temp', home.sendQuestion);
     app.get('/getLatestQuestion', home.getLatestQuestion);
+    app.get('/getAnswers', home.getAnswers);
+    app.get('/AttachPhoneToBeacon', home.attachPhoneToBeacon);
     /*app.get('/signup', home.signup);
 
     app.get('/', home.loggedIn, home.home);//home

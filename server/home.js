@@ -6,7 +6,6 @@ var mongoose = require('mongoose');
 mongoose.connect(configDB.url);*/
 var users = require('../models/home.js');
 var reminders = require('../models/reminder.js');
-var questions = require('../models/question.js');
 var cors = require('cors');
 var util = require('util');
 var multer = require('multer');
@@ -16,6 +15,14 @@ var subsriptionKey = 'a2ea2916d854479dabf9ea302e61a415';
 var httpsRequest = require('request');
 var utf8 = require('utf8');
 var exec = require('child_process').exec, child;
+
+//socket setup to handle mqtt requests
+var sock;
+var mq;
+var path      = require('path');
+var conf      = require(path.join(__dirname, 'config'));
+var internals = require(path.join(__dirname, 'internals'));
+setupSocket();
 
 var information;
 
@@ -96,8 +103,7 @@ var answerKeyValuePair = {
 	'34':'Daughter age',
 	'35':'<<daughter>>',
 	'36':'<<family>>',
-	'37':'<<grandChildren>>',
-	'45':'Reminders'
+	'37':'<<grandChildren>>'
 }
 
 var userKeyValuePair = [{
@@ -182,9 +188,6 @@ var userKeyValuePair = [{
 },{
 	key:'<<grandChildren>>',
 	value:'##https://s3.amazonaws.com/images-caltech-hacks/2747400516_45170dcfc6_z.jpg##'
-},{
-	key:'Reminder',
-	value:''
 }]
 
 
@@ -196,23 +199,55 @@ var userKeyValuePair = [{
 // }
 
 //for testing purposes only
-/*insertReminder = function(){
-	var date = new Date();
-	var reminder = new reminders({
-    "description" : "hi",
-    "time" : new Date(date.getTime() + 5*60*1000),
-    "reminded" : false
-	});
-	reminder.save(function(err){
-	});
-}
-insertReminder();*/
+// insertReminder = function(){
+// 	var date = new Date();
+// 	var reminder = new reminders({
+//     "description" : "hi",
+//     "time" : new Date(date.getTime() + 5*60*1000),
+//     "reminded" : false
+// 	});
+// 	reminder.save(function(err){
+// 	});
+// }
+// insertReminder();
 
 //function that queries database for reminders and relays message.
-checkReminders = function(mins){
+checkReminders = function(){
 	console.log('checking reminders');
+
+	var fs = require('fs');
+	if (fs.existsSync("../pushNotifications/notifications.txt")) {
+    	fs.appendFile("../pushNotifications/notifications.txt", "\nHey there", function(err) {
+	    if(err) {
+	        return console.log(err);
+	    }
+
+	    console.log("The text was appended to the file");
+		}); 
+	}else{
+		fs.writeFile("../pushNotifications/notifications.txt", "who am i", function(err) {
+	    if(err) {
+	        return console.log(err);
+	    }
+
+	    console.log("The file was created");
+		});
+	}
+	
+
+	/*exec('/home/karanvasnani/Desktop/AlzCare/pushNotifications/./a.sh \"' + "hello" + '\"', 
+			function(error, stdout, stderr){
+				console.log('stdout: ' + stdout);
+        		console.log('stderr: ' + stderr);
+        		if (error !== null) {
+             	console.log('exec error: ' + error);
+        		}
+	});*/
+
+
+
 	var date = new Date();
-	var futureDate = new Date(date.getTime() + mins*60*1000);
+	var futureDate = new Date(date.getTime() + 5*60*1000);
 	var reminderQuery = reminders.find({'time': {
 		$gt: date,
 		$lte: futureDate
@@ -220,28 +255,20 @@ checkReminders = function(mins){
 
 	reminderQuery.exec(function(err, response){
 		var reminderList = JSON.parse(JSON.stringify(response));
+		for(var index in reminderList){
+			var reminder = reminderList[index];
 
-		for(var i = 0; i < reminderList.length; i++){
-			var reminder = reminderList[i];
-
-			console.log("reminderList "+JSON.stringify(reminderList[i]));
 			//SECTION
 			//this is where the script is called, change the arguments accordingly. 
-
-			var fs = require('fs');
-			if (fs.existsSync("../pushNotifications/notifications.txt")) {
-		    	fs.appendFile("../pushNotifications/notifications.txt", "\n"+reminder.description, function(err) {
-			    if(err) {
-			        return console.log(err);
-			    }
-				}); 
-			}else{
-				fs.writeFile("../pushNotifications/notifications.txt", reminder.description, function(err) {
-			    if(err) {
-			        return console.log(err);
-			    }
-				});
-			}
+			
+			exec('../pushNotifications/./alexa.sh \"' + reminder.description + '\"', 
+			function(error, stdout, stderr){
+				console.log('stdout: ' + stdout);
+        		console.log('stderr: ' + stderr);
+        		if (error !== null) {
+             	console.log('exec error: ' + error);
+        		}
+			});
 			//child();
 
 			//update reminded to true
@@ -255,57 +282,9 @@ checkReminders = function(mins){
 	
 }
 //call this function upon init.
-checkReminders(5);
-//console.log(checkReminders(5));
-//call this function with arguments function, timing period, argument to function
-setInterval(checkReminders, 5*1000, 5);
-
-
-var deviceFlagCristian = false;
-var deviceFlagKyle = false;
-
-exports.attachPhoneToBeacon = function(req, res){
-	console.log(req.query.id);
-	var beaconId = req.query.beaconId;
-    var id = req.query.id;
-    var found = false;
-    if(req.query.beaconId != null && req.query.id != null){
-		if(beaconId == "Cristian" && deviceFlagCristian==false){
-    		deviceFlagCristian = true;
-    		setText("Simon Says "+beaconId +" is at the door");	    		
-    		console.log("detected Cristian's phone");
-		}else if(beaconId == "Kyle" && deviceFlagCristian==false){
-			deviceFlagKyle = true;
-			setText("Simon Says "+beaconId +" is at the door");				
-    		console.log("detected Kyle's phone");
-		}
-	}
-}
-
-
-setText = function(text){
-	console.log('setting text to file');
-	var fs = require('fs');
-	if (fs.existsSync("../pushNotifications/notifications.txt")) {
-    	fs.appendFile("../pushNotifications/notifications.txt", "\n"+text, function(err) {
-	    if(err) {
-	        return console.log(err);
-	    }
-
-	    console.log("The text was appended to the file");
-		}); 
-	}else{
-		fs.writeFile("../pushNotifications/notifications.txt", text, function(err) {
-	    if(err) {
-	        return console.log(err);
-	    }
-
-	    console.log("The file was created");
-		});
-	}
-}
-
-
+checkReminders();
+//call this function every minute.
+//setInterval(checkReminders, 5*1000);
 
 exports.setReminder = function(req, res){
 	var data = req.body;
@@ -458,18 +437,6 @@ function getIntermediateResponse(req, res){
 	return output;
 }
 
-exports.getLatestQuestion = function(req, res){
-	var query = questions.findOne({}).sort({$natural:-1}).limit(1);
-
-	query.exec(function(err, response){
-		if(err){
-			console.log(err);
-			res.send(err);
-		}
-		res.send(response);
-	});
-}
-
 exports.sendQuestion = function(req, res){
 	console.log("inside sendquestion");
 	console.log(JSON.stringify(req.body));
@@ -478,15 +445,6 @@ exports.sendQuestion = function(req, res){
 		var output;
 	    //checkAndHandleConjugate(req,res);
 		//var options = createOptions(req,res);
-		var question = new questions({
-			"question" : req.body.question,
-			"sentiment": 'inquisitive'
-		});
-		question.save(function(err){
-			if(err){
-				console.log(err);
-			}
-		})
 		var options = {
 	  		url: 'https://westus.api.cognitive.microsoft.com/qnamaker/v1.0/knowledgebases/'+knowledgeBaseId+'/generateAnswer',
 		  	method: 'POST',
@@ -539,11 +497,7 @@ exports.sendQuestion = function(req, res){
 					    		if(answerKeyValuePair[splitAnswer[x]]==undefined){
 					    			output=output+splitAnswer[x]+" ";
 					    		}else{
-									var currentAnswer;
-										if(splitAnswer[x]==45){
-											checkReminders(30);
-											currentAnswer = 'you have no more reminders.';
-										}
+						    			var currentAnswer;
 						    			for(var y in userKeyValuePair){
 						    				if(userKeyValuePair[y].key==answerKeyValuePair[splitAnswer[x]]){
 						    					currentAnswer=userKeyValuePair[y].value;
@@ -637,11 +591,7 @@ exports.getAnswers = function(req, res){
 					    		if(answerKeyValuePair[splitAnswer[x]]==undefined){
 					    			output=output+splitAnswer[x]+" ";
 					    		}else{
-									var currentAnswer;
-										if(splitAnswer[x]==45){
-											checkReminders(30);
-											currentAnswer = 'you have no more reminders.';
-										}
+						    			var currentAnswer;
 						    			for(var y in userKeyValuePair){
 						    				if(userKeyValuePair[y].key==answerKeyValuePair[splitAnswer[x]]){
 						    					currentAnswer=userKeyValuePair[y].value;
@@ -652,6 +602,7 @@ exports.getAnswers = function(req, res){
 					    			
 					    		}
 					    	}
+
 					    }
 					    
 					    //output = utf8.encode(output);
@@ -696,21 +647,124 @@ exports.getInfo = function(req, res){
 	}
 }
 
-var http = require('http'); 
-var express = require('express'); 
-var twilio = require('twilio'); 
-var app = express(); 
 
-exports.sendSMS = function(req, res) {
-	var twilio = require('twilio'); 
-	//console.log(req.parameters.Body);
-	var reminder = "Simon Says "+req.body.Body;
-	setText(reminder);
-	var twiml = new twilio.TwimlResponse(); 
-	twiml.message('Your message has been successfully sent!'); 
-	res.writeHead(200, {'Content-Type': 'text/xml'}); 
-	res.end(twiml.toString());
-} 
-http.createServer(app).listen(1337, function () { 
-	console.log("Express server listening on port 1337");
- });
+
+
+// -- Socket Handler
+// Here is where you should handle socket/mqtt events
+// The mqtt object should allow you to interface with the MQTT broker through 
+// events. Refer to the documentation for more info 
+// -> https://github.com/mcollina/mosca/wiki/Mosca-basic-usage
+// ----------------------------------------------------------------------------
+
+function socket_handler(socket, mqtt) {
+	console.log("mqtt handler");
+	// Called when a client connects
+
+	// Prepare to keep track of all connected users and sockets
+	sock = socket;
+ 	mq = mqtt;
+	mqtt.on('clientConnected', client => {
+		socket.emit('debug', {
+			type: 'CLIENT', msg: 'New client connected: ' + client.id
+		});
+	});
+
+	// Called when a client disconnects
+	mqtt.on('clientDisconnected', client => {
+		socket.emit('debug', {
+			type: 'CLIENT', msg: 'Client "' + client.id + '" has disconnected'
+		});
+	});
+
+	// Called when a client publishes data
+	mqtt.on('published', (data, client) => {
+		if (!client) return;
+		console.log(data.topic);
+
+		if(data.topic == "reset_sos"){
+			console.log("reset_sos button is pressed");
+			/*capacityCounter1++;
+			if(threshold < capacityCounter1){
+				var message = {
+					topic: 'ledOn1',
+					payload : 'red',
+					qos:0,
+					retain: false
+				};
+			
+				mq.publish(message,function(){
+					console.log("led on from counter1");
+				})
+
+				socket.emit('debug1', {
+				type: 'PUBLISH', 
+				msg: 'Client "' + client.id + '" published "' + JSON.stringify(data) + '"'
+			});
+			}*/
+			
+		}
+
+		else if(data.topic == "sos"){
+			console.log("sos button is pressed");
+			/*capacityCounter2++;
+			if(threshold < capacityCounter2){
+				var message = {
+					topic: 'ledOn2',
+					payload : 'red',
+					qos:0,
+					retain: false
+				};
+			
+				mq.publish(message,function(){
+					console.log("led on from counter2");
+				})
+				socket.emit('debug2', {
+				type: 'PUBLISH', 
+				msg: 'Client "' + client.id + '" published "' + JSON.stringify(data) + '"'
+			});
+			}*/
+			
+		}
+	});
+
+	// Called when a client subscribes
+	mqtt.on('subscribed', (topic, client) => {
+		if (!client) return;
+
+		socket.emit('debug', {
+			type: 'SUBSCRIBE',
+			msg: 'Client "' + client.id + '" subscribed to "' + topic + '"'
+		});
+	});
+
+	// Called when a client unsubscribes
+	mqtt.on('unsubscribed', (topic, client) => {
+		if (!client) return;
+
+		socket.emit('debug', {
+			type: 'SUBSCRIBE',
+			msg: 'Client "' + client.id + '" unsubscribed from "' + topic + '"'
+		});
+	});
+}
+
+function setupSocket() {
+	var server = require('http').createServer(app);
+	var io = sockets(server);
+	console.log("setup socket");
+
+	// Setup the internals
+	internals.start(mqtt => {
+		console.log("in internals");
+		io.on('connection', socket => {
+			console.log("calling shandler");
+			socket_handler(socket, mqtt)
+			
+		});
+	});
+
+	server.listen(conf.PORT, conf.HOST, () => { 
+		console.log("Listening on: " + conf.HOST + ":" + conf.PORT);
+	});
+}

@@ -77,6 +77,7 @@ while true; do
 
 			# Compose cURL command and write to output file.
 			echo "Making request..."
+
 			curl -s -X POST \
 			  -H "Authorization: Bearer ${TOKEN}" \
 			  -H "Content-Type: multipart/form-data; boundary=${BOUNDARY}" \
@@ -89,5 +90,5 @@ while true; do
 	else
 		echo "no notifications"
 	fi
-	sleep 15
+	sleep 5
 done

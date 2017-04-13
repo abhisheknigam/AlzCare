@@ -9,6 +9,7 @@
     "dateformat": "latest",
     "express": "~4.13.1",
     "http-proxy": "latest",
+    "mongodb": "^2.2.25",
     "mongoose": "latest",
     "multer": "latest",
     "nodemon": "latest",
