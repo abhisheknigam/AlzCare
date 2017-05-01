@@ -5,6 +5,9 @@
 
 Presentation Link : https://drive.google.com/file/d/0B2EBJgLE82rucmNYMERJZ3BabVU/view
 
+
+![Alt text](http://i67.tinypic.com/24oytet.png "Architecture")
+
 # INTRODUCTION:
 
  Alzheimer's disease (AD), also referred to simply as Alzheimer's, is a chronic neurodegenerative disease that usually starts slowly and worsens over time. It is the cause of 60% to 70% of cases of dementia. More than Five million Americans have Alzheimer’s disease. Alzheimer’s disease patients will grow each year as the size and proportion of the U.S. population age 65 and older continue to increase. Alzheimer's Disease is the sixth leading cause of death in the United States. Every 66 seconds someone in the U.S. develops the disease and one in three seniors dies with Alzheimer's or other dementia. Since this disease is so widespread we decided to work towards a solution to assist the patients.
