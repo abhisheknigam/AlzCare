@@ -11,15 +11,21 @@ Presentation Link : https://drive.google.com/file/d/0B2EBJgLE82rucmNYMERJZ3BabVU
 
 AlzCare is a personal IoT solution, which will help Alzheimer’s patients tackle their daily self-care activities using a series of sensors, beacons and voice based interaction. It will provide a platform for the caretakers to keep a check on the patient’s daily health and receive important notifications without the patient realizing it.
 
-# THE USERS: Caretakers and Patients.
+# THE USERS: 
+Caretakers and Patients.
 
 # THE PROJECT: 
 The project has six basic components: a web app as the dashboard, Amazon echo with Alexa, FRDM-K64F board along with sensors, a Node.js server, beacons, and mobile users. The details of each of these six components are as follows: 
+
 <b>1. Web app</b>:
- The web app acts as a dashboard from where the caretaker can:
+The web app acts as a dashboard from where the caretaker can:
+
 •	Provide details for the patient.
+
 •	Monitor if the patient presses the distress button and can also reset the notification.
+
 •	Monitor the patient’s activity to understand his/her behavior. 
+
 •	The caretaker can even set important reminders for the patient.
 
 
